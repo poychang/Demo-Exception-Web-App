@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -27,8 +28,30 @@ namespace DemoExceptionWebApp
 
             app.Run(async (context) =>
             {
-                await context.Response.WriteAsync("Hello World!");
+                await context.Response.WriteAsync("Exception Generator: Try pass counter value after URL to generate exception, example: http://YOUR_URL/?counter=10. It will raise exception between 1 to 3 second.");
+
+                if (int.TryParse(context.Request.Query.SingleOrDefault(p => p.Key.ToLower() == "counter").Value, out var counter))
+                {
+                    ExcentionGenerator(counter);
+                }
             });
+        }
+
+        private void ExcentionGenerator(int counter)
+        {
+            var rand = new Random();
+            for (var i = 0; i < counter; i++)
+            {
+                Thread.Sleep(rand.Next(1000, 3000));
+                try
+                {
+                    throw new NotSupportedException();
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                }
+            }
         }
     }
 }
